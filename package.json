@@ -34,7 +34,6 @@
     "dist"
   ],
   "dependencies": {
-    "@beenotung/tslib": "^14.41.0"
   },
   "devDependencies": {
     "@types/chai": "^4.2.7",

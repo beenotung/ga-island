@@ -1,8 +1,4 @@
-import {
-  randomBoolean,
-  randomElement,
-  shuffleArray,
-} from './utils/random';
+import { randomBoolean, randomElement, shuffleArray } from './utils/random';
 
 export type Options<G> = {
   mutate: (gene: G) => G;

@@ -8,8 +8,9 @@ Inspired from https://github.com/panchishin/geneticalgorithm
 
 ## Features
 - [x] Typescript Typing
-- [ ] Support custom methods to improve efficiency
-- [ ] Support dynamic adjustment on mutation rate
+- [x] Support custom methods to improve efficiency
+- [x] Support dynamic adjustment on mutation rate
+- [x] Niche Island Support (anti-competitor to encourage diversity)
 - [ ] Utilize multi-processor to speed up
 
 ## Remark

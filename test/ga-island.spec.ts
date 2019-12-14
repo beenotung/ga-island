@@ -1,14 +1,12 @@
-import {
-  FullOptions,
-  GaIsland,
-  populateOptions,
-  RequiredOptions,
-} from '../src/ga-island';
-import { randomBoolean, randomElement } from '../src/utils/random';
+import { FullOptions, GaIsland, populateOptions } from '../src/ga-island';
 import { expect } from 'chai';
 
 describe('ga-island TestSuit', function() {
   let n = 60;
+
+  function randomBoolean() {
+    return Math.random() < 0.5;
+  }
 
   function mutate(gene: string): string {
     let s = '';
@@ -100,34 +98,55 @@ describe('ga-island TestSuit', function() {
     );
   });
 
-  it('should populate initial population', function() {
+  it('should infer population size', function() {
+    let populationSize = 123;
     expect(
       populateOptions({
         mutate,
         crossover,
         fitness,
-        populationSize: 100,
+        populationSize,
         randomIndividual,
-      }).population.length,
-    ).equals(100);
+      }).populationSize,
+    ).equals(populationSize);
 
-    expect(() =>
-      populateOptions({
-        mutate,
-        crossover,
-        fitness,
-        populationSize: 100,
-        population: [],
-      }),
-    ).to.throw('no population for randomIndividual to seed from');
     expect(
       populateOptions({
         mutate,
         crossover,
         fitness,
-        populationSize: 100,
-        population: [randomIndividual()],
-      }).population.length,
-    ).equals(100);
+        populationSize,
+        population: [],
+      }).populationSize,
+    ).equals(populationSize);
+
+    expect(
+      populateOptions({
+        mutate,
+        crossover,
+        fitness,
+        population: new Array(populationSize),
+      }).populationSize,
+    ).equals(populationSize);
+  });
+
+  it('should solve the problem', function() {
+    let ga = new GaIsland({
+      mutate,
+      crossover,
+      fitness,
+      randomIndividual,
+    });
+    for (let generation = 1; ; generation++) {
+      ga.evolve();
+      let best = ga.best();
+      console.log({
+        generation,
+        best,
+      });
+      if (best.fitness === n) {
+        return;
+      }
+    }
   });
 });

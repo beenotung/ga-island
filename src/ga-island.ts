@@ -109,13 +109,6 @@ export function populateOptions<G>(
 export class GaIsland<G> {
   options: FullOptions<G>;
 
-  /**
-   * cached fitness
-   * will be updated when call compete()
-   * */
-  private _scores?: number[];
-  private _scoreDirty: boolean = true;
-
   constructor(options: RequiredOptions<G>) {
     this.options = populateOptions(options);
   }
@@ -128,20 +121,6 @@ export class GaIsland<G> {
 
   randomizePopulationOrder() {
     shuffleArray(this.options.random, this.options.population);
-  }
-
-  evaluate(): number[] {
-    const n = this.options.populationSize;
-    let scores = this._scores;
-    if (!scores || scores.length !== n) {
-      scores = this._scores = new Array(n);
-    }
-    const population = this.options.population;
-    for (let i = 0; i < n; i++) {
-      scores[i] = this.options.fitness(population[i]);
-    }
-    this._scoreDirty = false;
-    return scores;
   }
 
   /**
@@ -174,36 +153,11 @@ export class GaIsland<G> {
       nextGeneration[i + 1] = child;
     }
     this.options.population = nextGeneration;
-    this._scoreDirty = true;
   }
 
   evolve() {
     this.populate();
     this.randomizePopulationOrder();
     this.compete();
-  }
-
-  getScores(): number[] {
-    let scores = this._scores;
-    if (this._scoreDirty || !scores) {
-      scores = this.evaluate();
-    }
-    return scores;
-  }
-
-  best() {
-    const scores = this.getScores();
-    let maxIdx = 0;
-    let maxScore = scores[0];
-    const n = scores.length;
-    for (let i = 1; i < n; i++) {
-      const score = scores[i];
-      if (score > maxScore) {
-        maxScore = score;
-        maxIdx = i;
-      }
-    }
-    const gene = this.options.population[maxIdx];
-    return { gene, fitness: maxScore };
   }
 }

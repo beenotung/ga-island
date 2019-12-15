@@ -1,29 +1,13 @@
 /**
  * test techniques to speed up the iteration
  * 1. cache         : depends on implementation of doesABeatB()
- * 2. multi-process : works
- *
- *  ## speed table
- *
- *
- *  | technique               | generation per second |
- *  |-------------------------|-----------------------|
- *
- *  | single-process fitness  | 1.95                  |
- *
- *  |  multi-process fitness  | 1.774 ( 1 worker )
- *                              2.839 ( 2 workers)
- *                              3.342 ( 3 workers)
- *                              4.084 ( 4 workers)
- *                              4.707 ( 5 workers)
- *                              4.054 ( 6 workers)
- *                              4.238 ( 7 workers)
- *                              4.418 ( 8 workers)
- *                                                    |
+ * 2. multi-process : works but not linearly scalable
  * */
 import {
+  best,
   GaIsland,
   genDoesABeatB,
+  maxIndex,
   randomBoolean,
   randomNumber,
   RequiredOptions,
@@ -40,6 +24,7 @@ import { ThreadPool } from '../src/thread-pool';
 import { Gene, n } from './speed-test.shared';
 
 let singleCore = false;
+let numberOfProcess = 3;
 
 function randomCode(): string {
   return randomNumber(random, 0, 15, 1).toString(16);
@@ -67,7 +52,7 @@ function distance([_a, a]: Gene, [_b, b]: Gene): number {
 
 let threadPool = new ThreadPool({
   modulePath: `${__dirname}/speed-test.worker.js`,
-  weights: new Array(8).fill(1),
+  weights: new Array(numberOfProcess).fill(1),
 });
 let scores: number[];
 
@@ -110,7 +95,7 @@ let options: RequiredOptions<Gene> = {
     }
     return [-1, res];
   },
-  crossover: (a, b) => {
+  crossover: ([_a, a], [_b, b]) => {
     let c = '';
     let d = '';
     for (let i = 0; i < n; i++) {
@@ -148,12 +133,17 @@ function run() {
     let now = Date.now();
     let t = (now - start) / 1000;
     let speed = generation / t;
+    // let { gene, fitness } = best({
+    //   fitness: require("./speed-test.worker").fitness,
+    //   population: ga.options.population
+    // });
     print(
       '\r' +
         inspect({
           generation,
           'gen/sec': roundNumber(speed, 3),
           population: ga.options.populationSize,
+          // best: { gene: gene[1], fitness }
         }),
     );
     if (generation >= 50) {

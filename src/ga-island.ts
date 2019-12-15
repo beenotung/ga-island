@@ -52,6 +52,15 @@ export type RequiredOptions<G> = Options<G> &
   );
 export type FullOptions<G> = Required<Options<G>>;
 
+/**
+ * inplace populate the options.population gene pool
+ * */
+export function populate<G>(options: FullOptions<G>) {
+  while (options.population.length < options.populationSize) {
+    options.population.push(options.randomIndividual());
+  }
+}
+
 export function populateOptions<G>(
   options: RequiredOptions<G>,
 ): FullOptions<G> {
@@ -95,7 +104,7 @@ export function populateOptions<G>(
   if (!random) {
     random = Math.random;
   }
-  return (options = {
+  const fullOptions = (options = {
     ...options,
     mutationRate,
     doesABeatB,
@@ -104,6 +113,8 @@ export function populateOptions<G>(
     randomIndividual,
     random,
   });
+  populate(fullOptions);
+  return fullOptions;
 }
 
 export class GaIsland<G> {
@@ -111,12 +122,6 @@ export class GaIsland<G> {
 
   constructor(options: RequiredOptions<G>) {
     this.options = populateOptions(options);
-  }
-
-  populate() {
-    while (this.options.population.length < this.options.populationSize) {
-      this.options.population.push(this.options.randomIndividual());
-    }
   }
 
   randomizePopulationOrder() {
@@ -156,7 +161,6 @@ export class GaIsland<G> {
   }
 
   evolve() {
-    this.populate();
     this.randomizePopulationOrder();
     this.compete();
   }

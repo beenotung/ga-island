@@ -4,15 +4,22 @@
  * 2. multi-process : works
  *
  *  ## speed table
- *  |===|
+ *
+ *
  *  | technique               | generation per second |
+ *  |-------------------------|-----------------------|
  *
  *  | single-process fitness  | 1.95                  |
- *  |  multi-process fitness  |                       |
- *  |===|
  *
- *  *: generation per second, higher better
- *
+ *  |  multi-process fitness  | 1.774 ( 1 worker )
+ *                              2.839 ( 2 workers)
+ *                              3.342 ( 3 workers)
+ *                              4.084 ( 4 workers)
+ *                              4.707 ( 5 workers)
+ *                              4.054 ( 6 workers)
+ *                              4.238 ( 7 workers)
+ *                              4.418 ( 8 workers)
+ *                                                    |
  * */
 import {
   GaIsland,
@@ -21,7 +28,6 @@ import {
   randomNumber,
   RequiredOptions,
 } from '../src';
-import { createHash } from 'crypto';
 import {
   random,
   print,
@@ -31,31 +37,23 @@ import {
   appendFileSync,
 } from './helpers';
 import { ThreadPool } from '../src/thread-pool';
+import { Gene, n } from './speed-test.shared';
 
-function hash(s: string): string {
-  let h = createHash('sha256');
-  h.write(s);
-  let bin = h.digest();
-  h.end();
-  s = bin.toString('hex');
-  return s;
-}
-
-let n = hash('').length;
+let singleCore = false;
 
 function randomCode(): string {
   return randomNumber(random, 0, 15, 1).toString(16);
 }
 
-function randomIndividual(): string {
+function randomIndividual(): Gene {
   let s = '';
   for (let i = 0; i < n; i++) {
     s += randomCode();
   }
-  return s;
+  return [-1, s];
 }
 
-function distance(a: string, b: string): number {
+function distance([_a, a]: Gene, [_b, b]: Gene): number {
   let acc = 0;
   for (let i = 0; i < n; i++) {
     let x = parseInt(a[i], 16);
@@ -64,12 +62,44 @@ function distance(a: string, b: string): number {
     acc += d * d;
   }
   acc = Math.sqrt(acc);
-  // appendFileSync('distance.csv', acc + '\n')
   return acc;
 }
 
-let options: RequiredOptions<string> = {
-  mutate: gene => {
+let threadPool = new ThreadPool({
+  modulePath: `${__dirname}/speed-test.worker.js`,
+  weights: new Array(8).fill(1),
+});
+let scores: number[];
+
+function fitness(gene: Gene): number {
+  if (singleCore) {
+    const { fitness } = require('./speed-test.worker');
+    return fitness(gene);
+  }
+  return scores[gene[0]];
+}
+
+function evolve(ga: GaIsland<Gene>, cb: () => void) {
+  if (singleCore) {
+    const { fitness } = require('./speed-test.worker');
+    ga.options.fitness = fitness;
+    ga.evolve();
+    cb();
+    return;
+  }
+  ga.options.population.forEach((gene, i) => (gene[0] = i));
+  threadPool.dispatch<Gene, number>(ga.options.population, (err, outputs) => {
+    if (err) {
+      throw err;
+    }
+    scores = outputs;
+    ga.evolve();
+    cb();
+  });
+}
+
+let options: RequiredOptions<Gene> = {
+  mutate: ([_, gene]) => {
     let res = '';
     for (let i = 0; i < n; i++) {
       if (randomBoolean(random, 1 / n)) {
@@ -78,7 +108,7 @@ let options: RequiredOptions<string> = {
         res += gene[i];
       }
     }
-    return res;
+    return [-1, res];
   },
   crossover: (a, b) => {
     let c = '';
@@ -92,16 +122,12 @@ let options: RequiredOptions<string> = {
         d += a[i];
       }
     }
-    return [c, d];
+    return [
+      [-1, c],
+      [-1, d],
+    ];
   },
-  fitness: gene => {
-    let s = hash(gene);
-    let acc = 0;
-    for (let i = 0; i < n; i++) {
-      acc += parseInt(s[i], 16);
-    }
-    return acc;
-  },
+  fitness,
   populationSize: 20000,
   randomIndividual,
 };
@@ -114,32 +140,30 @@ let ga = new GaIsland(options);
 
 let generation = 0;
 
-let threadPool = new ThreadPool({ modulePath: './worker.js' });
-
-function evolve(cb: () => void) {
-  log('master:', { generation });
-  // threadPool.
-  // ga.evolve()
-  // cb()
-}
-
 let start = Date.now();
 
 function run() {
   generation++;
-  evolve(() => {
+  evolve(ga, () => {
     let now = Date.now();
     let t = (now - start) / 1000;
     let speed = generation / t;
     print(
       '\r' +
         inspect({
+          generation,
           'gen/sec': roundNumber(speed, 3),
           population: ga.options.populationSize,
         }),
     );
+    if (generation >= 50) {
+      process.exit();
+    }
     run();
   });
 }
 
+// it('should run', function () {
+//   run();
+// });
 run();

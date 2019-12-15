@@ -29,7 +29,7 @@ export class ThreadPool {
     let pending = 0;
     for (const worker of this.workers) {
       const start = offset;
-      const count = Math.ceil(worker.weight / this.totalWeights);
+      const count = Math.ceil((worker.weight / this.totalWeights) * n);
       const end = offset + count;
       const xs = inputs.slice(offset, end);
       pending++;
@@ -55,6 +55,11 @@ export class ThreadPool {
       | {
           modulePath: string;
           weights?: number[];
+          /**
+           * number of worker = (number of core / weights) * overload
+           * default to 1.0
+           * */
+          overload?: number;
         }
       | {
           workers: Worker[];
@@ -69,19 +74,21 @@ export class ThreadPool {
       this.workers.forEach(x => (this.totalWeights += x.weight));
       return;
     }
-    let { weights } = options;
+    let { weights, overload } = options;
     if (!weights) {
       weights = defaultWeights();
     }
     if (weights.length === 0) {
       throw new Error('require at least 1 weights');
     }
-    const n = weights.length;
-    // console.log('created', n, 'workers');
+    if (!overload) {
+      overload = 1;
+    }
+    const n = weights.length * overload;
     this.workers = new Array(n);
     this.totalWeights = 0;
     for (let i = 0; i < n; i++) {
-      const weight = weights[i];
+      const weight = weights[i % weights.length];
       this.totalWeights += weight;
       this.workers[i] = {
         weight,

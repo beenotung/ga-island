@@ -1,5 +1,6 @@
 import { FullOptions, GaIsland, populateOptions } from '../src/ga-island';
 import { expect } from 'chai';
+import { best } from '../src';
 
 describe('ga-island TestSuit', function() {
   let n = 60;
@@ -110,15 +111,15 @@ describe('ga-island TestSuit', function() {
       }).populationSize,
     ).equals(populationSize);
 
-    expect(
+    expect(() =>
       populateOptions({
         mutate,
         crossover,
         fitness,
         populationSize,
         population: [],
-      }).populationSize,
-    ).equals(populationSize);
+      }),
+    ).to.throw('no population for randomIndividual to seed from');
 
     expect(
       populateOptions({
@@ -139,12 +140,12 @@ describe('ga-island TestSuit', function() {
     });
     for (let generation = 1; ; generation++) {
       ga.evolve();
-      let best = ga.best();
+      let { gene, fitness } = best(ga.options);
       console.log({
         generation,
-        best,
+        best: { gene, fitness },
       });
-      if (best.fitness === n) {
+      if (fitness === n) {
         return;
       }
     }

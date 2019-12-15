@@ -2,6 +2,7 @@
  * generate a not-bad doesABeatB() function for kick-starter
  * should use custom implement according to the context
  * */
+import { FullOptions } from './ga-island';
 import { Random } from './utils/random';
 
 export function genDoesABeatB<G>(options: {
@@ -35,5 +36,25 @@ export function genDoesABeatB<G>(options: {
       return false;
     }
     return aScore > bScore;
+  };
+}
+
+export function best<G>(options: FullOptions<G>): { gene: G; fitness: number } {
+  if (options.populationSize === 0 || options.population.length === 0) {
+    throw new Error('empty population');
+  }
+  let bestGene = options.population[0];
+  let bestFitness = options.fitness(bestGene);
+  for (let i = 1; i < options.populationSize; i++) {
+    const gene = options.population[i];
+    const fitness = options.fitness(gene);
+    if (fitness > bestFitness) {
+      bestFitness = fitness;
+      bestGene = gene;
+    }
+  }
+  return {
+    gene: bestGene,
+    fitness: bestFitness,
   };
 }

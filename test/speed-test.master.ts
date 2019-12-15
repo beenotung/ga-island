@@ -24,7 +24,7 @@ import { ThreadPool } from '../src/thread-pool';
 import { Gene, n } from './speed-test.shared';
 
 let singleCore = false;
-let numberOfProcess = 3;
+let numberOfProcess = 8;
 
 function randomCode(): string {
   return randomNumber(random, 0, 15, 1).toString(16);

@@ -38,34 +38,19 @@ the IO cost may becomes the bottleneck.
 
 Speed up of an example (IO-Heavy)
 Fitness function: sha256 value
+Population Size: 20,000
 
 Testing machine:
 ```
 Architecture:                    x86_64
 CPU op-mode(s):                  32-bit, 64-bit
-Byte Order:                      Little Endian
-Address sizes:                   36 bits physical, 48 bits virtual
 CPU(s):                          8
-On-line CPU(s) list:             0-7
 Thread(s) per core:              2
 Core(s) per socket:              4
-Socket(s):                       1
-NUMA node(s):                    1
-Vendor ID:                       GenuineIntel
-CPU family:                      6
-Model:                           58
 Model name:                      Intel(R) Xeon(R) CPU E3-1230 V2 @ 3.30GHz
-Stepping:                        9
 CPU MHz:                         1615.729
 CPU max MHz:                     3700.0000
 CPU min MHz:                     1600.0000
-BogoMIPS:                        6587.28
-Virtualization:                  VT-x
-L1d cache:                       128 KiB
-L1i cache:                       128 KiB
-L2 cache:                        1 MiB
-L3 cache:                        8 MiB
-NUMA node0 CPU(s):               0-7
 ```
 
 

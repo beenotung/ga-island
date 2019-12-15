@@ -1,13 +1,16 @@
 {
   "name": "ga-island",
-  "version": "1.0.0",
-  "description": "",
-  "keywords": [],
-  "author": {
-    "name": "Beeno Tung",
-    "email": "aabbcc1241@yahoo.com.hk",
-    "url": "https://beeno-tung.surge.sh"
-  },
+  "version": "0.1.0",
+  "description": "Genetic Algorithm with 'island' Diversity control",
+  "keywords": [
+    "genetic",
+    "algorithm",
+    "genetic algorithm",
+    "artificial evolution",
+    "evolve",
+    "typescript"
+  ],
+  "author": "Beeno Tung <aabbcc1241@yahoo.com.hk> (https://beeno-tung.surge.sh)",
   "license": "BSD-2-Clause",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -33,8 +36,7 @@
   "files": [
     "dist"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/chai": "^4.2.7",
     "@types/mocha": "^5.2.7",
@@ -49,5 +51,13 @@
     "tslint-config-prettier": "^1.18.0",
     "tslint-eslint-rules": "^5.4.0",
     "typescript": "^3.7.3"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/beenotung/ga-island.git"
+  },
+  "bugs": {
+    "url": "https://github.com/beenotung/ga-island/issues"
+  },
+  "homepage": "https://github.com/beenotung/ga-island#readme"
 }

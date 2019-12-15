@@ -2,7 +2,6 @@
  * generate a not-bad doesABeatB() function for kick-starter
  * should use custom implement according to the context
  * */
-import { FullOptions } from './ga-island';
 import { Random } from './utils/random';
 
 export function genDoesABeatB<G>(options: {
@@ -39,13 +38,17 @@ export function genDoesABeatB<G>(options: {
   };
 }
 
-export function best<G>(options: FullOptions<G>): { gene: G; fitness: number } {
-  if (options.populationSize === 0 || options.population.length === 0) {
+export function best<G>(options: {
+  population: G[];
+  fitness: (gene: G) => number;
+}): { gene: G; fitness: number } {
+  const n = options.population.length;
+  if (n === 0) {
     throw new Error('empty population');
   }
   let bestGene = options.population[0];
   let bestFitness = options.fitness(bestGene);
-  for (let i = 1; i < options.populationSize; i++) {
+  for (let i = 1; i < n; i++) {
     const gene = options.population[i];
     const fitness = options.fitness(gene);
     if (fitness > bestFitness) {
@@ -57,4 +60,21 @@ export function best<G>(options: FullOptions<G>): { gene: G; fitness: number } {
     gene: bestGene,
     fitness: bestFitness,
   };
+}
+
+export function maxIndex(scores: number[]): number {
+  const n = scores.length;
+  if (n === 0) {
+    throw new Error('empty array');
+  }
+  let maxIdx = 0;
+  let maxScore = scores[0];
+  for (let idx = 1; idx < n; idx++) {
+    const score = scores[idx];
+    if (score > maxScore) {
+      maxScore = score;
+      maxIdx = idx;
+    }
+  }
+  return maxIdx;
 }

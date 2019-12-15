@@ -14,6 +14,7 @@ describe('ThreadPool TestSuit', function() {
       acc++;
       if (acc === 2) {
         console.log({ done: n });
+        threadPool.close();
         done();
       }
     };

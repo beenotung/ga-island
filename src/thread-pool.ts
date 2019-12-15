@@ -1,9 +1,9 @@
 import { ChildProcess, fork } from 'child_process';
-import { cpus } from 'os';
+import * as os from 'os';
 import { promisify } from 'util';
 
 function defaultWeights(): number[] {
-  return cpus().map(cpu => cpu.speed);
+  return os.cpus().map(cpu => cpu.speed);
 }
 
 export type Worker = {
@@ -88,5 +88,9 @@ export class ThreadPool {
         process: fork(options.modulePath),
       };
     }
+  }
+
+  close(signal: NodeJS.Signals | number = os.constants.signals.SIGTERM) {
+    this.workers.forEach(worker => worker.process.kill(signal));
   }
 }

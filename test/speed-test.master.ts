@@ -20,8 +20,8 @@ import {
   inspect,
   appendFileSync,
 } from './helpers';
-import { ThreadPool } from '../src/thread-pool';
 import { Gene, n } from './speed-test.shared';
+import { evalAll } from './speed-test.thread-worker';
 
 let singleCore = false;
 let numberOfProcess = 8;
@@ -50,10 +50,6 @@ function distance([_a, a]: Gene, [_b, b]: Gene): number {
   return acc;
 }
 
-let threadPool = new ThreadPool({
-  modulePath: `${__dirname}/speed-test.worker.js`,
-  weights: new Array(numberOfProcess).fill(1),
-});
 let scores: number[];
 
 function fitness(gene: Gene): number {
@@ -63,7 +59,6 @@ function fitness(gene: Gene): number {
   }
   return scores[gene[0]];
 }
-
 function evolve(ga: GaIsland<Gene>, cb: () => void) {
   if (singleCore) {
     const { fitness } = require('./speed-test.worker');
@@ -73,7 +68,7 @@ function evolve(ga: GaIsland<Gene>, cb: () => void) {
     return;
   }
   ga.options.population.forEach((gene, i) => (gene[0] = i));
-  threadPool.dispatch<Gene, number>(ga.options.population, (err, outputs) => {
+  evalAll(ga.options.population, (err, outputs) => {
     if (err) {
       throw err;
     }
@@ -139,12 +134,12 @@ function run() {
     // });
     print(
       '\r' +
-        inspect({
-          generation,
-          'gen/sec': roundNumber(speed, 3),
-          population: ga.options.populationSize,
-          // best: { gene: gene[1], fitness }
-        }),
+      inspect({
+        generation,
+        'gen/sec': roundNumber(speed, 3),
+        population: ga.options.populationSize,
+        // best: { gene: gene[1], fitness }
+      }),
     );
     if (generation >= 50) {
       process.exit();

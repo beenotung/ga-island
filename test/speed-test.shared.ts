@@ -13,3 +13,11 @@ export function hash(s: string): string {
 }
 
 export let n = hash('').length;
+export function fitness(gene: Gene): number {
+  let s = hash(gene[1]);
+  let acc = 0;
+  for (let i = 0; i < n; i++) {
+    acc += parseInt(s[i], 16);
+  }
+  return acc;
+}

@@ -1,0 +1,23 @@
+import { fitness, Gene, hash, n } from './speed-test.shared';
+import { ThreadPool } from '../src';
+
+let nWorker = 8;
+let threadPool: ThreadPool;
+export let evalAll: (
+  population: Gene[],
+  cb: (err: any, scores: number[]) => void,
+) => void = (population, cb) => {
+  if (!threadPool) {
+    threadPool = new ThreadPool({
+      modulePath: __filename,
+      weights: new Array(nWorker).fill(1),
+    });
+  }
+  threadPool.dispatch(population, cb);
+};
+
+process.on('message', message => {
+    let inputs: Gene[] = message;
+    let outputs: number[] = inputs.map(gene => fitness(gene));
+    process.send(outputs);
+});

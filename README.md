@@ -69,5 +69,12 @@ CPU min MHz:                     1600.0000
 
 ## TODO
 
-- [ ] Try to use worker thread with shared memory
+- [x] Try to use worker thread with shared memory
 - [ ] Re-implement in other compiled language, e.g. Golang, Java/Clojure/Scala
+
+## Surprise
+
+`child_process.fork` is more than 5 times faster than `worker_threads.Worker` in node.js v12.13.0.
+That means IPC among processes is faster than as if they're multiple threads in the same processes.
+
+Maybe due to accidentally triggered auto semaphore locking?

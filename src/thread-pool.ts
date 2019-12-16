@@ -1,14 +1,14 @@
-import { ChildProcess, fork } from 'child_process';
 import * as os from 'os';
 import { promisify } from 'util';
+import { Worker } from 'worker_threads';
 
 function defaultWeights(): number[] {
   return os.cpus().map(cpu => cpu.speed);
 }
 
-export type Worker = {
+export type WeightedWorker = {
   weight: number;
-  process: ChildProcess;
+  worker: Worker;
 };
 
 /**
@@ -17,7 +17,7 @@ export type Worker = {
  * */
 export class ThreadPool {
   totalWeights: number;
-  workers: Worker[];
+  workers: WeightedWorker[];
 
   dispatch: {
     <T, R>(inputs: T[], cb: (err: any, outputs: R[]) => void): void;
@@ -33,7 +33,7 @@ export class ThreadPool {
       const end = offset + count;
       const xs = inputs.slice(offset, end);
       pending++;
-      worker.process.once('message', ys => {
+      worker.worker.once('message', ys => {
         for (let o = start, c = 0; o < end; o++, c++) {
           outputs[o] = ys[c];
         }
@@ -42,7 +42,7 @@ export class ThreadPool {
           cb(undefined, outputs);
         }
       });
-      worker.process.send(xs);
+      worker.worker.postMessage(xs);
       if (end >= n) {
         break;
       }
@@ -62,7 +62,7 @@ export class ThreadPool {
           overload?: number;
         }
       | {
-          workers: Worker[];
+          workers: WeightedWorker[];
         },
   ) {
     if ('workers' in options) {
@@ -92,12 +92,12 @@ export class ThreadPool {
       this.totalWeights += weight;
       this.workers[i] = {
         weight,
-        process: fork(options.modulePath),
+        worker: new Worker(options.modulePath),
       };
     }
   }
 
-  close(signal: NodeJS.Signals | number = os.constants.signals.SIGTERM) {
-    this.workers.forEach(worker => worker.process.kill(signal));
+  close() {
+    this.workers.forEach(worker => worker.worker.terminate());
   }
 }

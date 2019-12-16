@@ -2,7 +2,7 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "allowJs": false,
-    "sourceMap": true,
+    "sourceMap": false,
     "declaration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,

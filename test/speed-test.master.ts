@@ -134,12 +134,12 @@ function run() {
     // });
     print(
       '\r' +
-      inspect({
-        generation,
-        'gen/sec': roundNumber(speed, 3),
-        population: ga.options.populationSize,
-        // best: { gene: gene[1], fitness }
-      }),
+        inspect({
+          generation,
+          'gen/sec': roundNumber(speed, 3),
+          population: ga.options.populationSize,
+          // best: { gene: gene[1], fitness }
+        }),
     );
     if (generation >= 50) {
       process.exit();

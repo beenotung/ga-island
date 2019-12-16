@@ -34,9 +34,6 @@
   "directories": {
     "test": "test"
   },
-  "files": [
-    "dist"
-  ],
   "devDependencies": {
     "@types/chai": "^4.2.7",
     "@types/mocha": "^5.2.7",

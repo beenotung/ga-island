@@ -12,12 +12,13 @@ export let evalAll: (
       modulePath: __filename,
       weights: new Array(nWorker).fill(1),
     });
+    console.log('created', nWorker, 'workers');
   }
   threadPool.dispatch(population, cb);
 };
 
 process.on('message', message => {
-    let inputs: Gene[] = message;
-    let outputs: number[] = inputs.map(gene => fitness(gene));
-    process.send(outputs);
+  let inputs: Gene[] = message;
+  let outputs: number[] = inputs.map(gene => fitness(gene));
+  process.send(outputs);
 });

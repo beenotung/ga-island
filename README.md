@@ -56,14 +56,25 @@ CPU min MHz:                     1600.0000
 
 | Number of Process | Speed* | Speed Up Rate | Parallelize Rate |
 |-------------------|--------|---------------|------------------|
-| 1                 | 2.081  | -             | -                |
-| 2                 | 3.098  | 1.489         | 0.745            |
-| 3                 | 3.983  | 1.914         | 0.638            |
-| 4                 | 4.266  | 2.050         | 0.513            |
-| 5                 | 4.202  | 2.019         | 0.505            |
-| 6                 | 4.649  | 2.234         | 0.559            |
-| 7                 | 4.966  | 2.386         | 0.597            |
-| 8                 | 5.056  | 2.430         | 0.608            |
+| 1                 | 2.013  | -             | -                |
+| 2                 | 3.244  | 1.612         | 0.806            |
+| 3                 | 4.002  | 1.988         | 0.663            |
+| 4                 | 4.338  | 2.155         | 0.539            |
+| 5                 | 4.183  | 2.078         | 0.519            |
+| 6                 | 4.436  | 2.204         | 0.551            |
+| 7                 | 4.796  | 2.383         | 0.596            |
+| 8                 | 4.803  | 2.386         | 0.596            |
+
+| Number of Thread  | Speed* | Speed Up Rate | Parallelize Rate |
+|-------------------|--------|---------------|------------------|
+| 1                 | 1.954  | -             | -                |
+| 2                 | 3.482  | 1.782         | 0.891            |
+| 3                 | 4.507  | 2.307         | 0.769            |
+| 4                 | 4.775  | 2.444         | 0.611            |
+| 5                 | 4.622  | 2.365         | 0.591            |
+| 6                 | 4.942  | 2.529         | 0.632            |
+| 7                 | 5.085  | 2.602         | 0.651            |
+| 8                 | 5.412  | 2.770         | 0.692            |
 
 *: Generation per second, higher better
 
@@ -71,10 +82,3 @@ CPU min MHz:                     1600.0000
 
 - [x] Try to use worker thread with shared memory
 - [ ] Re-implement in other compiled language, e.g. Golang, Java/Clojure/Scala
-
-## Surprise
-
-`child_process.fork` is more than 5 times faster than `worker_threads.Worker` in node.js v12.13.0.
-That means IPC among processes is faster than as if they're multiple threads in the same processes.
-
-Maybe due to accidentally triggered auto semaphore locking?

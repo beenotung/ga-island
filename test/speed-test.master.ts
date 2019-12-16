@@ -21,7 +21,7 @@ import {
   appendFileSync,
 } from './helpers';
 import { Gene, n } from './speed-test.shared';
-import { evalAll } from './speed-test.thread-worker';
+import { evalAll } from './speed-test.process-worker';
 
 let singleCore = false;
 let numberOfProcess = 8;

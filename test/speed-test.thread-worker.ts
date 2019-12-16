@@ -4,7 +4,10 @@ import { Worker, isMainThread, parentPort } from 'worker_threads';
 
 let nWorker = 8;
 let workers: Worker[];
-export let evalAll: (population: Gene[], cb: (err: any, scores: number[]) => void) => void;
+export let evalAll: (
+  population: Gene[],
+  cb: (err: any, scores: number[]) => void,
+) => void;
 if (isMainThread) {
   // is master
   workers = new Array(nWorker);
@@ -20,9 +23,10 @@ if (isMainThread) {
     let outputs: number[] = [];
     for (let i = 0; i < nWorker; i++) {
       let start = offset;
-      let count = Math.ceil(1 / nWorker) * n;
+      let count = Math.ceil((1 / nWorker) * n);
       let end = offset + count;
-      const inputs = population.slice(offset, end);
+      offset = end;
+      const inputs = population.slice(start, end);
       let worker = workers[i];
       worker.postMessage(inputs);
       pending++;
@@ -59,4 +63,3 @@ if (isMainThread) {
     cb(new Error('cannot call evalAll() from worker'), undefined as any);
   };
 }
-

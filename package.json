@@ -21,6 +21,7 @@
     "postformat": "tslint -p . --fix",
     "prebuild": "npm run clean",
     "build": "tsc",
+    "postbuild": "mk-package",
     "pretest": "npm run format && npm run build",
     "rawtest": "ts-node test/index.ts",
     "prepublishOnly": "npm run rawtest && npm run build"
@@ -36,14 +37,14 @@
   "files": [
     "dist"
   ],
-  "dependencies": {},
   "devDependencies": {
     "@types/chai": "^4.2.7",
     "@types/mocha": "^5.2.7",
     "@types/node": "*",
     "chai": "^4.2.0",
-    "mocha": "^6.2.2",
     "husky": "^3.1.0",
+    "mk-package": "github:beenotung/mk-package",
+    "mocha": "^6.2.2",
     "prettier": "^1.19.1",
     "rimraf": "^3.0.0",
     "ts-node": "^8.5.4",

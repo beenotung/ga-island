@@ -62,7 +62,7 @@ export function populate<G>(options: FullOptions<G>) {
 }
 
 export function populateOptions<G>(
-  options: RequiredOptions<G>,
+  _options: RequiredOptions<G>,
 ): FullOptions<G> {
   let {
     mutationRate,
@@ -71,13 +71,14 @@ export function populateOptions<G>(
     populationSize,
     randomIndividual,
     random,
-  } = options;
+  } = _options;
+  let fullOptions: FullOptions<G>;
   if (!mutationRate) {
     mutationRate = 0.5;
   }
   if (!doesABeatB) {
     doesABeatB = (a, b) => {
-      return options.fitness(a) >= options.fitness(b);
+      return fullOptions.fitness(a) >= fullOptions.fitness(b);
     };
   }
   if (!populationSize) {
@@ -87,32 +88,32 @@ export function populateOptions<G>(
     throw new Error('zero population');
   }
   if (!population) {
-    if (!options.randomIndividual) {
+    if (!randomIndividual) {
       throw new Error('missing randomIndividual in options');
     }
     population = [];
   }
   if (!randomIndividual) {
     randomIndividual = () => {
-      if (!options.population || options.population.length < 1) {
+      if (!fullOptions.population || fullOptions.population.length < 1) {
         throw new Error('no population for randomIndividual to seed from');
       }
-      const gene = randomElement(options.random!, options.population);
-      return options.mutate(gene);
+      const gene = randomElement(fullOptions.random, fullOptions.population);
+      return fullOptions.mutate(gene);
     };
   }
   if (!random) {
     random = Math.random;
   }
-  const fullOptions = (options = {
-    ...options,
+  fullOptions = {
+    ..._options,
     mutationRate,
     doesABeatB,
     population,
     populationSize,
     randomIndividual,
     random,
-  });
+  };
   populate(fullOptions);
   return fullOptions;
 }

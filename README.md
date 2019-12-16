@@ -69,5 +69,5 @@ CPU min MHz:                     1600.0000
 
 ## TODO
 
-- [ ] Try to use worker pool with shared pool
+- [ ] Try to use worker thread with shared memory
 - [ ] Re-implement in other compiled language, e.g. Golang, Java/Clojure/Scala

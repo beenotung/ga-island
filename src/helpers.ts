@@ -1,9 +1,9 @@
+import { Random } from './utils/random';
+
 /**
  * generate a not-bad doesABeatB() function for kick-starter
  * should use custom implement according to the context
  * */
-import { Random } from './utils/random';
-
 export function genDoesABeatB<G>(options: {
   /**
    * higher is better,

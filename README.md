@@ -6,7 +6,9 @@ Genetic Algorithm with 'island' Diversity support
 
 Simplified implementation with zero dependency.
 
-Inspired from https://github.com/panchishin/geneticalgorithm
+[Demo website](https://ga-island-demo.surge.sh)
+
+Inspired from [panchishin/geneticalgorithm](https://github.com/panchishin/geneticalgorithm)
 
 ## Features
 - [x] Typescript Typing
@@ -81,4 +83,3 @@ CPU min MHz:                     1600.0000
 ## TODO
 
 - [x] Try to use worker thread with shared memory
-- [ ] Re-implement in other compiled language, e.g. Golang, Java/Clojure/Scala

@@ -33,14 +33,16 @@ which is much higher than traditional setting where mutation is relative rare.
 ## Performance
 
 To better speed up the evolution iteration,
-the fitness of the population can be calculated in multiple processes.
+the fitness of the population can be calculated in multiple processes or threads.
 
 However, node.js doesn't allow shared memory across process,
-the IO cost may becomes the bottleneck.
+the IO cost may become the bottleneck. Therefore, you're recommended to use worker threads when it is supported in your node version.
 
 Speed up of an example (IO-Heavy)
+```
 Fitness function: sha256 value
 Population Size: 20,000
+```
 
 Testing machine:
 ```

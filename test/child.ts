@@ -16,5 +16,5 @@ process.on('message', message => {
     }, 1000);
     return;
   }
-  process.send({ result: 2 });
+  process.send!({ result: 2 });
 });

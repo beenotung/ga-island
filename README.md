@@ -50,7 +50,7 @@ More examples:
 
 ## Typescript Signature
 
-Core types and class:
+Core types and class in `ga-island`:
 ```typescript
 export class GaIsland<G> {
   options: FullOptions<G>;
@@ -101,7 +101,7 @@ export type Options<G> = {
 };
 ```
 
-Helper functions for ga-island:
+Helper functions for ga-island in `ga-island`:
 ```typescript
 /**
  * inplace populate the options.population gene pool
@@ -143,7 +143,7 @@ export function best<G>(options: {
 export function maxIndex(scores: number[]): number;
 ```
 
-Helper functions for random:
+Helper functions for random in `ga-island`:
 ```typescript
 /**
  * return float value from 0 to 1 inclusively
@@ -169,6 +169,46 @@ export function randomBoolean(random: Random, probability?: number): boolean;
  * in-place shuffle the order of elements in the array
  * */
 export function shuffleArray<T>(random: Random, xs: T[]): void;
+```
+
+Helper class for worker thread in `ga-island/thread-pool`:
+```typescript
+import { Worker } from 'worker_threads';
+
+export type WeightedWorker = {
+    weight: number;
+    worker: Worker;
+};
+
+/**
+ * only support request-response batch-by-batch
+ * DO NOT support multiple interlaced concurrent batches
+ * */
+export class ThreadPool {
+    totalWeights: number;
+
+    workers: WeightedWorker[];
+
+    dispatch<T, R>(inputs: T[]): Promise<R[]>;
+    dispatch<T, R>(inputs: T[], cb: (err: any, outputs: R[]) => void): void;
+
+    constructor(options: {
+        modulePath: string;
+        /**
+         * workload for each worker, default to 1.0 for all workers
+         * */
+        weights?: number[];
+        /**
+         * number of worker = (number of core / weights) * overload
+         * default to 1.0
+         * */
+        overload?: number;
+      } | {
+        workers: WeightedWorker[];
+    });
+
+    close(): void;
+}
 ```
 
 ## Remark

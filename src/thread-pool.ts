@@ -54,6 +54,9 @@ export class ThreadPool {
     options:
       | {
           modulePath: string;
+          /**
+           * workload for each worker, default to 1.0 for all workers
+           * */
           weights?: number[];
           /**
            * number of worker = (number of core / weights) * overload

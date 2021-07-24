@@ -29,7 +29,7 @@ let options: RequiredOptions<Gene> = {
   randomIndividual: (): Gene => '...',
   mutationRate: 0.5, // chance of mutation, otherwise will do crossover, default 0.5
   mutate: (gene: Gene): Gene => '...',
-  crossover: (a: Gene, b: Gene): [Gene, Gene] => ['...', '...'],
+  crossover: (a: Gene, b: Gene): Gene => '...',
   fitness: (gene: Gene) => 1, // higher is better
   doesABeatB: (a: Gene, b: Gene): boolean => true,  // default only compare by fitness, custom function can consider both distance and fitness
   random: Math.random, // optional, return floating number from 0 to 1 inclusively
@@ -77,7 +77,7 @@ export type Options<G> = {
      * chance of doing mutation, otherwise will do crossover
      * */
     mutationRate?: number;
-    crossover: (a: G, b: G) => [G, G];
+    crossover: (a: G, b: G) => G;
     /**
      * higher is better
      * */

@@ -21,19 +21,16 @@ describe('ga-island TestSuit', function() {
     return s;
   }
 
-  function crossover(a: string, b: string): [string, string] {
+  function crossover(a: string, b: string): string {
     let c = '';
-    let d = '';
     for (let i = 0; i < n; i++) {
       if (randomBoolean()) {
         c += a[i];
-        d += b[i];
       } else {
         c += b[i];
-        d += a[i];
       }
     }
-    return randomBoolean() ? [c, d] : [d, c];
+    return c
   }
 
   function fitness(gene: string): number {

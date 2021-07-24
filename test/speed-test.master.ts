@@ -92,20 +92,14 @@ let options: RequiredOptions<Gene> = {
   },
   crossover: ([_a, a], [_b, b]) => {
     let c = '';
-    let d = '';
     for (let i = 0; i < n; i++) {
       if (randomBoolean(random)) {
         c += a[i];
-        d += b[i];
       } else {
         c += b[i];
-        d += a[i];
       }
     }
-    return [
-      [-1, c],
-      [-1, d],
-    ];
+    return [-1, c];
   },
   fitness,
   populationSize: 20000,

@@ -34,12 +34,11 @@ export function mutationFunction(phenotype: Gene): Gene {
   };
 }
 
-export function crossoverFunction(a: Gene, b: Gene): [Gene, Gene] {
-  let x = cloneJSON(a);
-  let y = cloneJSON(b);
-  x.x = b.x;
-  y.y = a.y;
-  return Math.random() < .5 ? [x, y] : [y, x];
+export function crossoverFunction(a: Gene, b: Gene): Gene {
+  return Math.random() < .5
+    ? {x: a.x, y: b.y}
+    : {x: b.x, y: a.y}
+    ;
 }
 
 export function positionScore(x: number, y: number): number {

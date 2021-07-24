@@ -9,7 +9,7 @@ export type Options<G> = {
    * */
   mutationRate?: number;
 
-  crossover: (a: G, b: G) => [G, G];
+  crossover: (a: G, b: G) => G;
 
   /**
    * higher is better
@@ -153,7 +153,7 @@ export class GaIsland<G> {
           child = this.options.crossover(
             gene,
             randomElement(this.options.random, this.options.population),
-          )[0];
+          );
         }
       } else {
         // competitor is stronger than current gene

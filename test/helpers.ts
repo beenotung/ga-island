@@ -1,5 +1,3 @@
-import { randomNumber } from '../src';
-
 export let { log } = console;
 export let { random } = Math;
 export let print = process.stdout.write.bind(process.stdout);

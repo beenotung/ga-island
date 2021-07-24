@@ -6,5 +6,5 @@ process.on('message', message => {
   }
   let inputs: any[] = message;
   let outputs = inputs.map(input => ({ echo: input }));
-  process.send(outputs);
+  process.send!(outputs);
 });

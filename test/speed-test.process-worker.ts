@@ -1,5 +1,5 @@
 import { fitness, Gene, hash, n } from './speed-test.shared';
-import { ThreadPool } from '../src';
+import { ThreadPool } from '../src/thread-pool';
 
 let nWorker = 8;
 let threadPool: ThreadPool;
@@ -20,5 +20,5 @@ export let evalAll: (
 process.on('message', message => {
   let inputs: Gene[] = message;
   let outputs: number[] = inputs.map(gene => fitness(gene));
-  process.send(outputs);
+  process.send!(outputs);
 });

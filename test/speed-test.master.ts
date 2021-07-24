@@ -54,14 +54,14 @@ let scores: number[];
 
 function fitness(gene: Gene): number {
   if (singleCore) {
-    const { fitness } = require('./speed-test.worker');
+    const { fitness } = require('./speed-test.thread-worker');
     return fitness(gene);
   }
   return scores[gene[0]];
 }
 function evolve(ga: GaIsland<Gene>, cb: () => void) {
   if (singleCore) {
-    const { fitness } = require('./speed-test.worker');
+    const { fitness } = require('./speed-test.thread-worker');
     ga.options.fitness = fitness;
     ga.evolve();
     cb();

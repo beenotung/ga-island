@@ -238,15 +238,17 @@ export class ThreadPool {
 ## Remark
 [panchishin/geneticalgorithm](https://github.com/panchishin/geneticalgorithm) is a non-traditional genetic algorithm implementation.
 
-It doesn't sort the population by fitness when making next generation.
+It doesn't sort the population by fitness when evolving into next generation.
 
 Instead, it randomly picks a pair of 'parent genes',
 and randomly choose one 'parent' to become the 'child',
 and merge two 'parents' into another 'child'.
 
-Also, the mutation v.s. crossover probability is 50%,
+In `ga-island`, only the 'stronger parent' in the pair can survive to next generation. Another child is the mutation result of the 'stronger parent', or the crossover result of the 'stronger parent' and another random parent.
+
+Also, in `panchishin/geneticalgorithm`, the mutation v.s. crossover probability is 50%,
 which is much higher than traditional setting where mutation is relative rare.
-(Custom probability is supported in this implementation)
+(Custom probability is supported in `ga-island`)
 
 ## Performance
 

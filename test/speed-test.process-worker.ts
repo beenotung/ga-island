@@ -1,4 +1,4 @@
-import { fitness, Gene, hash, n } from './speed-test.shared';
+import { fitness, Gene } from './speed-test.shared';
 import { ThreadPool } from '../src/thread-pool';
 
 let nWorker = 8;

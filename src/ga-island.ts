@@ -61,6 +61,9 @@ export function populate<G>(options: FullOptions<G>) {
   }
 }
 
+/**
+ * Apply default options and populate when needed
+ * */
 export function populateOptions<G>(
   _options: RequiredOptions<G>,
 ): FullOptions<G> {

@@ -17,8 +17,162 @@ Inspired from [panchishin/geneticalgorithm](https://github.com/panchishin/geneti
 - [x] Niche Island Support (anti-competitor to encourage diversity)
 - [x] Utilize multi-processor to speed up
 
+## Usage Example
+
+```typescript
+import { RequiredOptions, GaIsland } from 'ga-island';
+
+type Gene = string;
+
+let options: RequiredOptions<Gene> = {
+  populationSize: 100, // shoud be even numner, default 100
+  randomIndividual: (): Gene => '...',
+  mutationRate: 0.5, // chance of mutation, otherwise will do crossover, default 0.5
+  mutate: (gene: Gene): Gene => '...',
+  crossover: (a: Gene, b: Gene): [Gene, Gene] => ['...', '...'],
+  fitness: (gene: Gene) => 1, // higher is better
+  doesABeatB: (a: Gene, b: Gene): boolean => true,  // default only compare by fitness, custom function can consider both distance and fitness
+  random: Math.random, // optional, return floating number from 0 to 1 inclusively
+};
+
+let ga = new GaIsland(options);
+for (let generation = 1; generation <= 100 ; generation++) {
+  ga.evolve();
+  let { gene, fitness } = best(ga.options);
+  console.log({ generation, fitness, gene });
+}
+```
+
+More examples:
+- [(frog) islandHop](./examples)
+- [ga-island.spec.ts](./test/ga-island.spec.ts)
+- [speed-test.master.ts](./test/speed-test.master.ts), [speed-test.thread-worker.ts](./test/speed-test.thread-worker.ts), [speed-test.process-worker.ts](./test/speed-test.process-worker.ts)
+
+## Typescript Signature
+
+Core types and class:
+```typescript
+export class GaIsland<G> {
+  options: FullOptions<G>;
+  constructor(options: RequiredOptions<G>);
+  evolve(): void;
+}
+
+export type RequiredOptions<G> = Options<G> & ({
+  population: G[];
+} | {
+  randomIndividual: () => G;
+});
+
+export type FullOptions<G> = Required<Options<G>>;
+
+export type Options<G> = {
+    mutate: (gene: G) => G;
+    /**
+     * default 0.5
+     * chance of doing mutation, otherwise will do crossover
+     * */
+    mutationRate?: number;
+    crossover: (a: G, b: G) => [G, G];
+    /**
+     * higher is better
+     * */
+    fitness: (gene: G) => number;
+    /**
+     * default only compare the fitness
+     * custom function should consider both distance and fitness
+     * */
+    doesABeatB?: (a: G, b: G) => boolean;
+    population?: G[];
+    /**
+     * default 100
+     * should be even number
+     * */
+    populationSize?: number;
+    /**
+     * default randomly pick a gene from the population than mutate
+     * */
+    randomIndividual?: () => G;
+    /**
+     * return floating number from 0 to 1 inclusively
+     * default Math.random()
+     * */
+    random?: () => number;
+};
+```
+
+Helper functions for ga-island:
+```typescript
+/**
+ * inplace populate the options.population gene pool
+ * */
+export function populate<G>(options: FullOptions<G>): void;
+
+/**
+ * Apply default options and populate when needed
+ * */
+export function populateOptions<G>(_options: RequiredOptions<G>): FullOptions<G>;
+
+/**
+ * generate a not-bad doesABeatB() function for kick-starter
+ * should use custom implement according to the context
+ * */
+export function genDoesABeatB<G>(options: {
+  /**
+   * higher is better,
+   * zero or negative is failed gene
+   * */
+  fitness: (gene: G) => number;
+  distance: (a: G, b: G) => number;
+  min_distance: number;
+  /**
+   * return float value from 0 to 1 inclusively
+   * as chance to change the Math.random() implementation
+   * */
+  random?: Random;
+}): (a: G, b: G) => boolean;
+
+export function best<G>(options: {
+  population: G[];
+  fitness: (gene: G) => number;
+}): {
+  gene: G;
+  fitness: number;
+};
+
+export function maxIndex(scores: number[]): number;
+```
+
+Helper functions for random:
+```typescript
+/**
+ * return float value from 0 to 1 inclusively
+ * */
+export type Random = () => number;
+
+/**
+ * @param random  custom implementation of Math.random()
+ * @param min     inclusive lower bound
+ * @param max     inclusive upper bound
+ * @param step    interval between each value
+ * */
+export function randomNumber(random: Random, min: number, max: number, step: number): number;
+
+export function randomElement<T>(random: Random, xs: T[]): T;
+/**
+ * @param random        custom implementation of Math.random()
+ * @param probability   change of getting true
+ * */
+export function randomBoolean(random: Random, probability?: number): boolean;
+
+/**
+ * in-place shuffle the order of elements in the array
+ * */
+export function shuffleArray<T>(random: Random, xs: T[]): void;
+```
+
 ## Remark
-panchishin/geneticalgorith is a non-traditional genetic algorithm implementation.
+[panchishin/geneticalgorithm](https://github.com/panchishin/geneticalgorithm) is a non-traditional genetic algorithm implementation.
 
 It doesn't sort the population by fitness when making next generation.
 

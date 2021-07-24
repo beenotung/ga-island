@@ -50,7 +50,11 @@ More examples:
 
 ## Typescript Signature
 
+<details>
+<summary>
 Core types and class in `ga-island`:
+</summary>
+
 ```typescript
 export class GaIsland<G> {
   options: FullOptions<G>;
@@ -101,7 +105,13 @@ export type Options<G> = {
 };
 ```
 
+</details>
+
+<details>
+<summary>
 Helper functions for ga-island in `ga-island`:
+</summary>
+
 ```typescript
 /**
  * inplace populate the options.population gene pool
@@ -143,7 +153,13 @@ export function best<G>(options: {
 export function maxIndex(scores: number[]): number;
 ```
 
+</details>
+
+<details>
+<summary>
 Helper functions for random in `ga-island`:
+</summary>
+
 ```typescript
 /**
  * return float value from 0 to 1 inclusively
@@ -171,7 +187,13 @@ export function randomBoolean(random: Random, probability?: number): boolean;
 export function shuffleArray<T>(random: Random, xs: T[]): void;
 ```
 
+</details>
+
+<details>
+<summary>
 Helper class for worker thread in `ga-island/thread-pool`:
+</summary>
+
 ```typescript
 import { Worker } from 'worker_threads';
 
@@ -210,6 +232,8 @@ export class ThreadPool {
     close(): void;
 }
 ```
+
+</details>
 
 ## Remark
 [panchishin/geneticalgorithm](https://github.com/panchishin/geneticalgorithm) is a non-traditional genetic algorithm implementation.

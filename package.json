@@ -1,6 +1,6 @@
 {
   "name": "ga-island",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Genetic Algorithm with 'island' Diversity support",
   "keywords": [
     "genetic",

@@ -1,7 +1,11 @@
-import { randomBoolean, randomElement, shuffleArray } from './utils/random';
+import { randomElement, shuffleArray } from './utils/random';
 
-export type Options<G> = {
-  mutate: (gene: G) => G;
+export type Options<G extends object> = {
+  /**
+   * The output should be updated in-place.
+   * This design can reduce GC pressure with object pooling.
+   *  */
+  mutate: (input: G, output: G) => void;
 
   /**
    * default 0.5
@@ -9,7 +13,11 @@ export type Options<G> = {
    * */
   mutationRate?: number;
 
-  crossover: (a: G, b: G) => G;
+  /**
+   * The child should be updated in-place.
+   * This design can reduce GC pressure with object pooling.
+   *  */
+  crossover: (aParent: G, bParent: G, child: G) => void;
 
   /**
    * higher is better
@@ -41,7 +49,7 @@ export type Options<G> = {
    * */
   random?: () => number;
 };
-export type RequiredOptions<G> = Options<G> &
+export type RequiredOptions<G extends object> = Options<G> &
   (
     | {
         population: G[];
@@ -50,12 +58,12 @@ export type RequiredOptions<G> = Options<G> &
         randomIndividual: () => G;
       }
   );
-export type FullOptions<G> = Required<Options<G>>;
+export type FullOptions<G extends object> = Required<Options<G>>;
 
 /**
- * inplace populate the options.population gene pool
+ * in-place populate the options.population gene pool
  * */
-export function populate<G>(options: FullOptions<G>) {
+export function populate<G extends object>(options: FullOptions<G>) {
   while (options.population.length < options.populationSize) {
     options.population.push(options.randomIndividual());
   }
@@ -64,7 +72,7 @@ export function populate<G>(options: FullOptions<G>) {
 /**
  * Apply default options and populate when needed
  * */
-export function populateOptions<G>(
+export function populateOptions<G extends object>(
   _options: RequiredOptions<G>,
 ): FullOptions<G> {
   let {
@@ -84,6 +92,9 @@ export function populateOptions<G>(
       return fullOptions.fitness(a) >= fullOptions.fitness(b);
     };
   }
+  if (doesABeatB.length !== 2) {
+    throw new TypeError('doesABeatB() should takes 2 arguments');
+  }
   if (!populationSize) {
     populationSize = population ? population.length : 100;
   }
@@ -101,12 +112,27 @@ export function populateOptions<G>(
       if (!fullOptions.population || fullOptions.population.length < 1) {
         throw new Error('no population for randomIndividual to seed from');
       }
-      const gene = randomElement(fullOptions.random, fullOptions.population);
-      return fullOptions.mutate(gene);
+      const gene = {
+        ...randomElement(fullOptions.random, fullOptions.population),
+      };
+      fullOptions.mutate(gene, gene);
+      return gene;
     };
+  }
+  if (randomIndividual.length !== 0) {
+    throw new TypeError('randomIndividual() should takes no arguments');
   }
   if (!random) {
     random = Math.random;
+  }
+  if (random.length !== 0) {
+    throw new TypeError('random() should takes no arguments');
+  }
+  if (_options.mutate.length !== 2) {
+    throw new TypeError('mutate() should takes 2 arguments');
+  }
+  if (_options.crossover.length !== 3) {
+    throw new TypeError('mutate() should takes 3 arguments');
   }
   fullOptions = {
     ..._options,
@@ -121,7 +147,7 @@ export function populateOptions<G>(
   return fullOptions;
 }
 
-export class GaIsland<G> {
+export class GaIsland<G extends object> {
   options: FullOptions<G>;
 
   constructor(options: RequiredOptions<G>) {
@@ -138,30 +164,28 @@ export class GaIsland<G> {
    * */
   compete() {
     const n = this.options.populationSize;
-    const nextGeneration = new Array(n);
+    const population = this.options.population;
     const end = n - 1;
     for (let i = 0; i < end; i += 2) {
-      const gene = this.options.population[i];
-      const competitor = this.options.population[i + 1];
-      nextGeneration[i] = gene;
-      let child: G;
-      if (this.options.doesABeatB(gene, competitor)) {
-        // competitor is weaker than current gene
-        if (randomBoolean(this.options.random, this.options.mutationRate)) {
-          child = this.options.mutate(gene);
-        } else {
-          child = this.options.crossover(
-            gene,
-            randomElement(this.options.random, this.options.population),
-          );
-        }
-      } else {
-        // competitor is stronger than current gene
-        child = competitor;
+      const gene = population[i];
+      const competitor = population[i + 1];
+      if (!this.options.doesABeatB(gene, competitor)) {
+        // competitor is stronger than current gene, or too far from this gene
+        continue;
       }
-      nextGeneration[i + 1] = child;
+      // competitor is weaker than the current gene, will reuse the competitor for new gene
+      if (this.options.random() < this.options.mutationRate) {
+        // mutate the gene, store the result on weak competitor
+        this.options.mutate(gene, competitor);
+      } else {
+        // crossover the gene with a random parent, store the result on weak competitor
+        const parent2 = randomElement(
+          this.options.random,
+          this.options.population,
+        );
+        this.options.crossover(gene, parent2, competitor);
+      }
     }
-    this.options.population = nextGeneration;
   }
 
   evolve() {

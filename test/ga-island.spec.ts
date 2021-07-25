@@ -9,46 +9,48 @@ describe('ga-island TestSuit', function() {
     return Math.random() < 0.5;
   }
 
-  function mutate(gene: string): string {
+  type Gene = { pattern: string };
+
+  function mutate(gene: Gene, output: Gene): void {
     let s = '';
     for (let i = 0; i < n; i++) {
-      let c = gene[i];
+      let c = gene.pattern[i];
       if (randomBoolean()) {
         c = c === '0' ? '1' : '0';
       }
       s += c;
     }
-    return s;
+    output.pattern = s;
   }
 
-  function crossover(a: string, b: string): string {
+  function crossover(a: Gene, b: Gene, child: Gene): void {
     let c = '';
     for (let i = 0; i < n; i++) {
       if (randomBoolean()) {
-        c += a[i];
+        c += a.pattern[i];
       } else {
-        c += b[i];
+        c += b.pattern[i];
       }
     }
-    return c;
+    child.pattern = c;
   }
 
-  function fitness(gene: string): number {
+  function fitness(gene: Gene): number {
     let acc = 0;
     for (let i = 0; i < n; i++) {
-      if (gene[i] === '1') {
+      if (gene.pattern[i] === '1') {
         acc++;
       }
     }
     return acc;
   }
 
-  function randomIndividual(): string {
+  function randomIndividual(): Gene {
     let s = '';
     for (let i = 0; i < n; i++) {
       s += randomBoolean() ? '0' : '1';
     }
-    return s;
+    return { pattern: s };
   }
 
   function checkFunction(f: any, length: number) {
@@ -56,10 +58,10 @@ describe('ga-island TestSuit', function() {
     expect(f.length).equals(length);
   }
 
-  function checkOptions(options: FullOptions<string>) {
+  function checkOptions(options: FullOptions<Gene>) {
     expect(options).is.an('object');
-    checkFunction(options.mutate, 1);
-    checkFunction(options.crossover, 2);
+    checkFunction(options.mutate, 2);
+    checkFunction(options.crossover, 3);
     checkFunction(options.fitness, 1);
     checkFunction(options.doesABeatB, 2);
     expect(options.population).is.a('Array');
@@ -140,7 +142,8 @@ describe('ga-island TestSuit', function() {
       let { gene, fitness } = best(ga.options);
       console.log({
         generation,
-        best: { gene, fitness },
+        bestGene: gene.pattern,
+        fitness,
       });
       if (fitness === n) {
         return;

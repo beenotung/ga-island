@@ -1,75 +1,75 @@
-import { FullOptions, GaIsland, populateOptions } from '../src/ga-island';
-import { expect } from 'chai';
-import { best } from '../src';
+import { FullOptions, GaIsland, populateOptions } from '../src/ga-island'
+import { expect } from 'chai'
+import { best } from '../src'
 
-describe('ga-island TestSuit', function() {
-  let n = 60;
+describe('ga-island TestSuit', function () {
+  let n = 60
 
   function randomBoolean() {
-    return Math.random() < 0.5;
+    return Math.random() < 0.5
   }
 
-  type Gene = { pattern: string };
+  type Gene = { pattern: string }
 
   function mutate(gene: Gene, output: Gene): void {
-    let s = '';
+    let s = ''
     for (let i = 0; i < n; i++) {
-      let c = gene.pattern[i];
+      let c = gene.pattern[i]
       if (randomBoolean()) {
-        c = c === '0' ? '1' : '0';
+        c = c === '0' ? '1' : '0'
       }
-      s += c;
+      s += c
     }
-    output.pattern = s;
+    output.pattern = s
   }
 
   function crossover(a: Gene, b: Gene, child: Gene): void {
-    let c = '';
+    let c = ''
     for (let i = 0; i < n; i++) {
       if (randomBoolean()) {
-        c += a.pattern[i];
+        c += a.pattern[i]
       } else {
-        c += b.pattern[i];
+        c += b.pattern[i]
       }
     }
-    child.pattern = c;
+    child.pattern = c
   }
 
   function fitness(gene: Gene): number {
-    let acc = 0;
+    let acc = 0
     for (let i = 0; i < n; i++) {
       if (gene.pattern[i] === '1') {
-        acc++;
+        acc++
       }
     }
-    return acc;
+    return acc
   }
 
   function randomIndividual(): Gene {
-    let s = '';
+    let s = ''
     for (let i = 0; i < n; i++) {
-      s += randomBoolean() ? '0' : '1';
+      s += randomBoolean() ? '0' : '1'
     }
-    return { pattern: s };
+    return { pattern: s }
   }
 
   function checkFunction(f: any, length: number) {
-    expect(f).is.a('function');
-    expect(f.length).equals(length);
+    expect(f).is.a('function')
+    expect(f.length).equals(length)
   }
 
   function checkOptions(options: FullOptions<Gene>) {
-    expect(options).is.an('object');
-    checkFunction(options.mutate, 2);
-    checkFunction(options.crossover, 3);
-    checkFunction(options.fitness, 1);
-    checkFunction(options.doesABeatB, 2);
-    expect(options.population).is.a('Array');
-    expect(options.populationSize).is.a('number');
-    checkFunction(options.randomIndividual, 0);
+    expect(options).is.an('object')
+    checkFunction(options.mutate, 2)
+    checkFunction(options.crossover, 3)
+    checkFunction(options.fitness, 1)
+    checkFunction(options.doesABeatB, 2)
+    expect(options.population).is.a('Array')
+    expect(options.populationSize).is.a('number')
+    checkFunction(options.randomIndividual, 0)
   }
 
-  it('should populate options', function() {
+  it('should populate options', function () {
     expect(() =>
       populateOptions({
         mutate,
@@ -77,7 +77,7 @@ describe('ga-island TestSuit', function() {
         fitness,
         population: [],
       }),
-    ).to.throw('zero population');
+    ).to.throw('zero population')
 
     checkOptions(
       populateOptions({
@@ -86,7 +86,7 @@ describe('ga-island TestSuit', function() {
         fitness,
         population: [randomIndividual()],
       }),
-    );
+    )
 
     checkOptions(
       populateOptions({
@@ -95,11 +95,11 @@ describe('ga-island TestSuit', function() {
         fitness,
         randomIndividual,
       }),
-    );
-  });
+    )
+  })
 
-  it('should infer population size', function() {
-    let populationSize = 123;
+  it('should infer population size', function () {
+    let populationSize = 123
     expect(
       populateOptions({
         mutate,
@@ -108,7 +108,7 @@ describe('ga-island TestSuit', function() {
         populationSize,
         randomIndividual,
       }).populationSize,
-    ).equals(populationSize);
+    ).equals(populationSize)
 
     expect(() =>
       populateOptions({
@@ -118,7 +118,7 @@ describe('ga-island TestSuit', function() {
         populationSize,
         population: [],
       }),
-    ).to.throw('no population for randomIndividual to seed from');
+    ).to.throw('no population for randomIndividual to seed from')
 
     expect(
       populateOptions({
@@ -127,27 +127,27 @@ describe('ga-island TestSuit', function() {
         fitness,
         population: new Array(populationSize),
       }).populationSize,
-    ).equals(populationSize);
-  });
+    ).equals(populationSize)
+  })
 
-  it('should solve the problem', function() {
+  it('should solve the problem', function () {
     let ga = new GaIsland({
       mutate,
       crossover,
       fitness,
       randomIndividual,
-    });
+    })
     for (let generation = 1; ; generation++) {
-      ga.evolve();
-      let { gene, fitness } = best(ga.options);
+      ga.evolve()
+      let { gene, fitness } = best(ga.options)
       console.log({
         generation,
         bestGene: gene.pattern,
         fitness,
-      });
+      })
       if (fitness === n) {
-        return;
+        return
       }
     }
-  });
-});
+  })
+})

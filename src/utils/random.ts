@@ -21,7 +21,7 @@ export function randomNumber(
 }
 
 export function randomElement<T>(random: Random, xs: T[]): T {
-  const idx = randomNumber(random, 0, xs.length - 1, 1);
+  const idx = Math.floor(random() * xs.length);
   return xs[idx];
 }
 

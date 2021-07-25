@@ -29,10 +29,10 @@
     "build": "run-s clean tsc mk-package",
     "tsc": "tsc",
     "mk-package": "mk-package",
-    "test": "run-p mocha format build",
+    "test": "run-s mocha format build",
     "mocha": "run-s mocha:*",
-    "mocha:tsc": "tsc -p tsconfig.mocha.json --noEmit",
-    "mocha:run": "ts-mocha test/ga-island.spec.ts",
+    "mocha:tsc": "tsc -p tsconfig.mocha.json",
+    "mocha:run": "mocha dist/test",
     "prepublishOnly": "run-s mocha build"
   },
   "husky": {
@@ -62,7 +62,6 @@
     "prettier": "^2.3.2",
     "rimraf": "^3.0.0",
     "surge": "^0.21.6",
-    "ts-mocha": "^8.0.0",
     "ts-node": "^8.5.4",
     "typescript": "^3.7.3"
   },

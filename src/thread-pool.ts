@@ -22,33 +22,39 @@ export class ThreadPool {
   dispatch: {
     <T, R>(inputs: T[], cb: (err: any, outputs: R[]) => void): void
     <T, R>(inputs: T[]): Promise<R[]>
-  } = promisify(<T, R>(inputs: T[], cb: (err: any, outputs: R[]) => void) => {
-    const n = inputs.length
-    const outputs = new Array(n)
-    let offset = 0
-    let pending = 0
-    for (const worker of this.workers) {
-      const start = offset
-      const count = Math.ceil((worker.weight / this.totalWeights) * n)
-      const end = offset + count
-      const xs = inputs.slice(offset, end)
-      pending++
-      worker.worker.once('message', ys => {
-        for (let o = start, c = 0; o < end; o++, c++) {
-          outputs[o] = ys[c]
+  } = promisify(
+    <T, R>(input_list: T[], cb: (err: any, outputs: R[]) => void) => {
+      const n = input_list.length
+      const output_list = new Array(n)
+      let offset = 0
+      let pending = 0
+      for (const worker of this.workers) {
+        const start_index = offset
+        const slice_count = Math.ceil((worker.weight / this.totalWeights) * n)
+        const input_sub_list = input_list.slice(offset, offset + slice_count)
+        const end_index = offset + input_sub_list.length
+        pending++
+        worker.worker.once('message', output_sub_list => {
+          for (
+            let output_index = start_index, sub_list_index = 0;
+            output_index < end_index;
+            output_index++, sub_list_index++
+          ) {
+            output_list[output_index] = output_sub_list[sub_list_index]
+          }
+          pending--
+          if (pending === 0) {
+            cb(undefined, output_list)
+          }
+        })
+        worker.worker.postMessage(input_sub_list)
+        if (end_index >= n) {
+          break
         }
-        pending--
-        if (pending === 0) {
-          cb(undefined, outputs)
-        }
-      })
-      worker.worker.postMessage(xs)
-      if (end >= n) {
-        break
+        offset = end_index
       }
-      offset = end
-    }
-  })
+    },
+  )
 
   constructor(
     options:
@@ -101,6 +107,6 @@ export class ThreadPool {
   }
 
   close() {
-    this.workers.forEach(worker => worker.worker.terminate())
+    return this.workers.map(worker => worker.worker.terminate())
   }
 }

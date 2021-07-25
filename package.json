@@ -29,7 +29,9 @@
     "tsc": "tsc",
     "mk-package": "mk-package",
     "test": "run-p mocha format build",
-    "mocha": "ts-mocha test/ga-island.spec.ts",
+    "mocha": "run-s mocha:*",
+    "mocha:tsc": "tsc -p tsconfig.mocha.json --noEmit",
+    "mocha:run": "ts-mocha test/ga-island.spec.ts",
     "prepublishOnly": "run-s mocha build"
   },
   "husky": {

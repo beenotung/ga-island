@@ -33,7 +33,7 @@ export function randomBoolean(
   random: Random,
   probability: number = 0.5,
 ): boolean {
-  return random() <= probability;
+  return random() < probability;
 }
 
 /**

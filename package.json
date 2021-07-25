@@ -16,7 +16,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "demo:build": "cd examples && parcel build islandHop.html && cd ..",
-    "demo:serve": "run-s demo:build demo:http-server",
+    "demo:serve": "cd examples && parcel serve islandHop.html",
     "demo:http-server": "http-server examples/dist",
     "demo:publish": "run-s demo:build demo:cp surge",
     "demo:cp": "cd examples/dist && cp islandHop.html index.html && cd ../..",

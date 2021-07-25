@@ -30,7 +30,7 @@ describe('ga-island TestSuit', function() {
         c += b[i];
       }
     }
-    return c
+    return c;
   }
 
   function fitness(gene: string): number {

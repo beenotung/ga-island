@@ -1,65 +1,58 @@
 import { fitness, Gene } from './speed-test.shared'
+import { isMainThread, MessagePort, parentPort, Worker } from 'worker_threads'
 
-import { Worker, isMainThread, parentPort } from 'worker_threads'
+const { ceil } = Math
 
-let nWorker = 8
-let workers: Worker[]
-export let evalAll: (
+const worker_list: Worker[] = []
+
+if (parentPort) {
+  initWorkerThread(parentPort)
+}
+
+export function evalAll(
   population: Gene[],
-  cb: (err: any, scores: number[]) => void,
-) => void
-if (isMainThread) {
-  // is master
-  workers = new Array(nWorker)
-  for (let i = 0; i < nWorker; i++) {
-    let worker = new Worker(__filename)
-    workers[i] = worker
+  cb: (err: any, score_list: number[]) => void,
+) {
+  if (!isMainThread) {
+    cb('evalAll() is only available in main thread', [])
+    return
   }
-  console.log('created', nWorker, 'workers')
-  evalAll = (population, cb) => {
-    let n = population.length
-    let offset = 0
-    let pending = 0
-    let outputs: number[] = []
-    for (let i = 0; i < nWorker; i++) {
-      let start = offset
-      let count = Math.ceil((1 / nWorker) * n)
-      let end = offset + count
-      offset = end
-      const inputs = population.slice(start, end)
-      let worker = workers[i]
-      worker.postMessage(inputs)
-      pending++
-      // console.log({pending})
-      worker.once('message', ys => {
-        for (let o = start, c = 0; o < end; o++, c++) {
-          outputs[o] = ys[c]
-        }
-        pending--
-        // console.log({pending})
-        if (pending === 0) {
-          cb(undefined, outputs)
-        }
+  const n_worker = worker_list.length
+  const score_list: number[] = []
+  const slice_each_worker = ceil(population.length / n_worker)
+  let offset = 0
+  let pending = 0
+  for (let i = 0; i < n_worker; i++) {
+    const start = offset
+    const sub_population = population.slice(start, start + slice_each_worker)
+    offset += sub_population.length
+    pending++
+    worker_list[i].once('message', (sub_score_list: number[]) => {
+      sub_score_list.forEach((score, i) => {
+        score_list[start + i] = score
       })
-    }
-    // console.log('master: sent to',pending,'workers')
+      pending--
+      if (pending === 0) {
+        cb(undefined, score_list)
+      }
+    })
+    worker_list[i].postMessage(sub_population)
   }
-} else {
-  // is worker
-  parentPort!.on('message', message => {
+}
+
+export function initMainThread(n_worker: number) {
+  for (let i = 0; i < n_worker; i++) {
+    worker_list[i] = worker_list[i] || new Worker(__filename)
+  }
+}
+
+function initWorkerThread(parentPort: MessagePort) {
+  parentPort.on('message', message => {
     if (message === 'stop') {
       process.exit()
-      return
     }
-    let population: Gene[] = message
-    let outputs: number[] = population.map(gene => fitness(gene))
-    // console.log('worker:', {
-    //   population,
-    //   outputs,
-    // })
-    parentPort!.postMessage(outputs)
+    const gene_list: Gene[] = message
+    const score_list = gene_list.map(fitness)
+    parentPort.postMessage(score_list)
   })
-  evalAll = (population, cb) => {
-    cb(new Error('cannot call evalAll() from worker'), undefined as any)
-  }
 }

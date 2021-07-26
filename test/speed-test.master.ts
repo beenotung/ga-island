@@ -4,27 +4,34 @@
  * 2. multi-process : works but not linearly scalable
  * */
 import {
-  best,
   GaIsland,
   genDoesABeatB,
-  maxIndex,
   randomBoolean,
   randomNumber,
   RequiredOptions,
 } from '../src'
+import { inspect, print, random, roundNumber } from './helpers'
+import { fitness as singleCoreFitness, Gene, n } from './speed-test.shared'
 import {
-  random,
-  print,
-  log,
-  roundNumber,
-  inspect,
-  appendFileSync,
-} from './helpers'
-import { Gene, n } from './speed-test.shared'
-import { evalAll } from './speed-test.process-worker'
+  evalAll as threadEvalAll,
+  initMainThread,
+} from './speed-test.thread-worker'
+import {
+  evalAll as processEvalAll,
+  initMainProcess,
+} from './speed-test.process-worker'
 
-let singleCore = false
-let numberOfProcess = 8
+const concurrentMode = process.argv[2]
+const numberOfCore = +process.argv[3]
+const maxGeneration = 100 * numberOfCore
+const populationSize = 20000
+const singleCore = false
+
+const [evalAll, initMain] =
+  concurrentMode === 'thread'
+    ? [threadEvalAll, initMainThread]
+    : [processEvalAll, initMainProcess]
+initMain(numberOfCore)
 
 function randomCode(): string {
   return randomNumber(random, 0, 15, 1).toString(16)
@@ -54,15 +61,14 @@ let scores: number[]
 
 function fitness(gene: Gene): number {
   if (singleCore) {
-    const { fitness } = require('./speed-test.thread-worker')
-    return fitness(gene)
+    return singleCoreFitness(gene)
   }
   return scores[gene[0]]
 }
+
 function evolve(ga: GaIsland<Gene>, cb: () => void) {
   if (singleCore) {
-    const { fitness } = require('./speed-test.thread-worker')
-    ga.options.fitness = fitness
+    ga.options.fitness = singleCoreFitness
     ga.evolve()
     cb()
     return
@@ -79,18 +85,19 @@ function evolve(ga: GaIsland<Gene>, cb: () => void) {
 }
 
 let options: RequiredOptions<Gene> = {
-  mutate: ([_, gene]) => {
+  mutate: (gene, output): void => {
     let res = ''
     for (let i = 0; i < n; i++) {
       if (randomBoolean(random, 1 / n)) {
         res += randomCode()
       } else {
-        res += gene[i]
+        res += gene[1][i]
       }
     }
-    return [-1, res]
+    output[0] = -1
+    output[1] = res
   },
-  crossover: ([_a, a], [_b, b]) => {
+  crossover: ([_a, a], [_b, b], child): void => {
     let c = ''
     for (let i = 0; i < n; i++) {
       if (randomBoolean(random)) {
@@ -99,10 +106,11 @@ let options: RequiredOptions<Gene> = {
         c += b[i]
       }
     }
-    return [-1, c]
+    child[0] = -1
+    child[1] = c
   },
   fitness,
-  populationSize: 20000,
+  populationSize,
   randomIndividual,
 }
 options.doesABeatB = genDoesABeatB({
@@ -112,9 +120,9 @@ options.doesABeatB = genDoesABeatB({
 })
 let ga = new GaIsland(options)
 
-let generation = 0
-
 let start = Date.now()
+
+let generation = 0
 
 function run() {
   generation++
@@ -135,14 +143,13 @@ function run() {
           // best: { gene: gene[1], fitness }
         }),
     )
-    if (generation >= 50) {
-      process.exit()
+    if (generation < maxGeneration) {
+      return run()
     }
-    run()
+    console.log()
+    process.exit()
   })
 }
 
-// it('should run', function () {
-//   run();
-// });
+console.log({ concurrentMode, numberOfCore })
 run()

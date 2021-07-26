@@ -13,6 +13,7 @@ export function hash(s: string): string {
 }
 
 export let n = hash('').length
+
 export function fitness(gene: Gene): number {
   let s = hash(gene[1])
   let acc = 0

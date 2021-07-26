@@ -6,7 +6,7 @@ npx tsc test/speed-test.process-worker.ts
 npx tsc test/speed-test.thread-worker.ts
 
 for i in {1..8}; do
-  npx ts-node test/speed-test.master.ts process $i
-  npx ts-node test/speed-test.master.ts thread $i
+  npx ts-node test/speed-test.main.ts process $i
+  npx ts-node test/speed-test.main.ts thread $i
 done
 

@@ -274,8 +274,11 @@ the fitness of the population can be calculated in multiple processes or threads
 However, node.js doesn't allow shared memory across process,
 the IO cost may become the bottleneck. Therefore, you're recommended to use worker threads when it is supported in your node version.
 
-Speed up of an example (IO-Heavy)
+<details>
+<summary> <b>Example Benchmark on ThreadPool</b> <i>(click to expand)</i>
+</summary>
 
+Experiment setup:
 ```
 Fitness function: sha256 hash
 Population Size: 20,000
@@ -297,6 +300,8 @@ CPU min MHz:                     1600.0000
 
 Node Version:                    v14.17.0
 ```
+
+source code: [speed-test.ts](./test/speed-test.main.ts)
 
 Single-core baseline: 2.378 gen/sec
 
@@ -324,9 +329,8 @@ Single-core baseline: 2.378 gen/sec
 
 \*: Generation per second, higher better
 
-## TODO
+</details>
 
-- [x] Try to use worker thread with shared memory
 
 ## License
 

@@ -279,6 +279,7 @@ the IO cost may become the bottleneck. Therefore, you're recommended to use work
 </summary>
 
 Experiment setup:
+
 ```
 Fitness function: sha256 hash
 Population Size: 20,000
@@ -330,7 +331,6 @@ Single-core baseline: 2.378 gen/sec
 \*: Generation per second, higher better
 
 </details>
-
 
 ## License
 

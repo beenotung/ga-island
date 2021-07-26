@@ -23,14 +23,20 @@ Inspired from [panchishin/geneticalgorithm](https://github.com/panchishin/geneti
 ```typescript
 import { RequiredOptions, GaIsland } from 'ga-island'
 
-type Gene = string
+type Gene = {
+  pattern: string
+}
 
 let options: RequiredOptions<Gene> = {
-  populationSize: 100, // shoud be even numner, default 100
-  randomIndividual: (): Gene => '...',
+  populationSize: 100, // should be even number, default 100
+  randomIndividual: (): Gene => ({ pattern: '...' }),
   mutationRate: 0.5, // chance of mutation, otherwise will do crossover, default 0.5
-  mutate: (gene: Gene): Gene => '...',
-  crossover: (a: Gene, b: Gene): Gene => '...',
+  mutate: (input: Gene, output: Gene): void => {
+    output.pattern = '...'
+  },
+  crossover: (aParent: Gene, bParent: Gene, child: Gene): void => {
+    output.pattern = '...'
+  },
   fitness: (gene: Gene) => 1, // higher is better
   doesABeatB: (a: Gene, b: Gene): boolean => true, // default only compare by fitness, custom function can consider both distance and fitness
   random: Math.random, // optional, return floating number from 0 to 1 inclusively
@@ -77,13 +83,21 @@ export type RequiredOptions<G> = Options<G> &
 export type FullOptions<G> = Required<Options<G>>
 
 export type Options<G> = {
-  mutate: (gene: G) => G
+  /**
+   * The output should be updated in-place.
+   * This design can reduce GC pressure with object pooling.
+   *  */
+  mutate: (input: G, output: G) => void
   /**
    * default 0.5
    * chance of doing mutation, otherwise will do crossover
    * */
   mutationRate?: number
-  crossover: (a: G, b: G) => G
+  /**
+   * The child should be updated in-place.
+   * This design can reduce GC pressure with object pooling.
+   *  */
+  crossover: (aParent: G, bParent: G, child: G) => void
   /**
    * higher is better
    * */

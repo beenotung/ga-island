@@ -4,7 +4,7 @@ const { abs } = Math
 
 const canvas = document.getElementById('canvas') as HTMLCanvasElement
 const madeit = document.getElementById('madeit') as HTMLParagraphElement
-const context = canvas.getContext('2d')
+const context = canvas.getContext('2d')!
 if (!context) {
   const msg = '2D Canvas Context is not supported'
   document.body.innerHTML = msg

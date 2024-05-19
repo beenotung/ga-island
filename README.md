@@ -21,7 +21,7 @@ Inspired from [panchishin/geneticalgorithm](https://github.com/panchishin/geneti
 ## Usage Example
 
 ```typescript
-import { RequiredOptions, GaIsland } from 'ga-island'
+import { RequiredOptions, GaIsland, best } from 'ga-island'
 
 type Gene = {
   pattern: string

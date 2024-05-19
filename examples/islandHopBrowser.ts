@@ -86,7 +86,7 @@ function draw() {
   window.requestAnimationFrame(draw)
 }
 
-window.onload = function() {
+window.onload = function () {
   basic_ga()
   window.requestAnimationFrame(draw)
 }
@@ -109,7 +109,7 @@ Object.assign(window, {
   stopSimulation,
 })
 
-setInterval(function() {
+setInterval(function () {
   if (!doSimulation) return
   for (let x = 0; x < 10; x++) ga.evolve()
   let acc = 0

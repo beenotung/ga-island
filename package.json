@@ -46,12 +46,12 @@
   "devDependencies": {
     "@types/chai": "^4.2.7",
     "@types/mocha": "^5.2.7",
-    "@types/node": "*",
+    "@types/node": "^20.12.12",
     "@typescript-eslint/eslint-plugin": "^4.28.4",
     "@typescript-eslint/parser": "^4.28.4",
     "chai": "^4.2.0",
     "cssnano": "^4.1.10",
-    "eslint": "^7.31.0",
+    "eslint": "^4.19.1",
     "format-json-cli": "^1.0.1",
     "http-server": "^0.12.3",
     "husky": "^3.1.0",
@@ -59,11 +59,11 @@
     "mocha": "^6.2.2",
     "npm-run-all": "^4.1.5",
     "parcel": "^1.12.4",
-    "prettier": "^2.3.2",
+    "prettier": "^2.8.8",
     "rimraf": "^3.0.0",
     "surge": "^0.21.6",
-    "ts-node": "^8.5.4",
-    "typescript": "^3.7.3"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
   },
   "repository": {
     "type": "git",

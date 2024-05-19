@@ -38,7 +38,7 @@ let options: RequiredOptions<Gene> = {
     output.pattern = '...'
   },
   fitness: (gene: Gene) => 1, // higher is better
-  doesABeatB: (a: Gene, b: Gene): boolean => true, // default only compare by fitness, custom function can consider both distance and fitness
+  doesABeatB: (a: Gene, b: Gene): boolean => true, // optional, default only compare by fitness, custom function can consider both similarity and fitness
   random: Math.random, // optional, return floating number from 0 to 1 inclusively
 }
 

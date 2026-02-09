@@ -15,17 +15,17 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "demo:build": "cd examples && parcel build islandHop.html && cd ..",
-    "demo:serve": "cd examples && parcel serve islandHop.html",
-    "demo:http-server": "http-server examples/dist",
+    "demo:build": "esbuild --bundle examples/islandHopBrowser.ts --outfile=examples/bundle.js",
+    "demo:dev": "run-p demo:serve demo:http-server",
+    "demo:serve": "npm run demo:build -- --watch",
+    "demo:http-server": "serve-lite examples",
     "demo:publish": "run-s demo:build demo:cp surge",
-    "demo:cp": "cd examples/dist && cp islandHop.html index.html && cd ../..",
+    "demo:cp": "cp examples/islandHop.html examples/dist/index.html && cp examples/bundle.js examples/dist/bundle.js",
     "surge": "surge examples/dist https://ga-island-demo.surge.sh",
     "clean": "rimraf dist examples/.cache",
-    "format": "run-s prettier clean format-json lint",
+    "format": "run-s prettier clean format-json",
     "prettier": "prettier --write .",
     "format-json": "format-json-cli",
-    "lint": "eslint --fix .",
     "build": "run-s clean tsc mk-package",
     "tsc": "tsc",
     "mk-package": "mk-package",
@@ -35,35 +35,25 @@
     "mocha:run": "mocha dist/test",
     "prepublishOnly": "run-s mocha build"
   },
-  "husky": {
-    "hook": {
-      "pre-commit": "npm run format"
-    }
-  },
   "directories": {
     "test": "test"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.7",
-    "@types/mocha": "^5.2.7",
-    "@types/node": "^20.12.12",
-    "@typescript-eslint/eslint-plugin": "^4.28.4",
-    "@typescript-eslint/parser": "^4.28.4",
-    "chai": "^4.2.0",
-    "cssnano": "^4.1.10",
-    "eslint": "^4.19.1",
-    "format-json-cli": "^1.0.1",
-    "http-server": "^0.12.3",
-    "husky": "^3.1.0",
-    "mk-package": "^0.2.0",
-    "mocha": "^6.2.2",
+    "@types/chai": "^5.2.3",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.10.12",
+    "chai": "^6.2.2",
+    "esbuild": "^0.27.3",
+    "format-json-cli": "^1.1.0",
+    "mk-package": "^1.0.2",
+    "mocha": "^11.7.5",
     "npm-run-all": "^4.1.5",
-    "parcel": "^1.12.4",
-    "prettier": "^2.8.8",
-    "rimraf": "^3.0.0",
-    "surge": "^0.21.6",
+    "prettier": "^3.8.1",
+    "rimraf": "^6.1.2",
+    "serve-lite": "^1.6.1",
+    "surge": "^0.24.6",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.9.3"
   },
   "repository": {
     "type": "git",
@@ -72,5 +62,11 @@
   "bugs": {
     "url": "https://github.com/beenotung/ga-island/issues"
   },
-  "homepage": "https://github.com/beenotung/ga-island#readme"
+  "homepage": "https://github.com/beenotung/ga-island#readme",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "core-js",
+      "esbuild"
+    ]
+  }
 }

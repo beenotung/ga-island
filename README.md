@@ -17,6 +17,7 @@ Inspired from [panchishin/geneticalgorithm](https://github.com/panchishin/geneti
 - [x] Support dynamic adjustment on mutation rate
 - [x] Niche Island Support (anti-competitor to encourage diversity)
 - [x] Utilize multi-processor to speed up
+- [x] Support async fitness evaluation and comparison functions
 
 ## Usage Example
 
@@ -50,10 +51,42 @@ for (let generation = 1; generation <= 100; generation++) {
 }
 ```
 
+## Async Usage Example
+
+```typescript
+import { RequiredAsyncOptions, GaIslandAsync, bestAsync } from 'ga-island'
+
+type Gene = {
+  pattern: string
+}
+
+let options: RequiredAsyncOptions<Gene> = {
+  populationSize: 100, // should be even number, default 100
+  randomIndividual: (): Gene => ({ pattern: '...' }),
+  mutationRate: 0.5, // chance of mutation, otherwise will do crossover, default 0.5
+  mutate: (input: Gene, output: Gene): void => {
+    output.pattern = '...'
+  },
+  crossover: (aParent: Gene, bParent: Gene, child: Gene): void => {
+    output.pattern = '...'
+  },
+  fitness: async (gene: Gene) => 1, // async fitness evaluation
+  doesABeatB: async (a: Gene, b: Gene): Promise<boolean> => true, // optional async comparison
+  random: Math.random, // optional, return floating number from 0 to 1 inclusively
+}
+
+let ga = new GaIslandAsync(options)
+for (let generation = 1; generation <= 100; generation++) {
+  await ga.evolve()
+  let { gene, fitness } = await bestAsync(ga.options)
+  console.log({ generation, fitness, gene })
+}
+```
+
 More examples:
 
 - [(frog) islandHop](./examples)
-- [ga-island.spec.ts](./test/ga-island.spec.ts)
+- [ga-island.spec.ts](./test/ga-island.spec.ts) (includes async example)
 - [speed-test.master.ts](./test/speed-test.master.ts), [speed-test.thread-worker.ts](./test/speed-test.thread-worker.ts), [speed-test.process-worker.ts](./test/speed-test.process-worker.ts)
 
 ## Typescript Signature
@@ -70,6 +103,12 @@ export class GaIsland<G> {
   evolve(): void
 }
 
+export class GaIslandAsync<G> {
+  options: FullAsyncOptions<G>
+  constructor(options: RequiredAsyncOptions<G>)
+  evolve(): Promise<void>
+}
+
 export type RequiredOptions<G> = Options<G> &
   (
     | {
@@ -80,7 +119,19 @@ export type RequiredOptions<G> = Options<G> &
       }
   )
 
+export type RequiredAsyncOptions<G> = AsyncOptions<G> &
+  (
+    | {
+        population: G[]
+      }
+    | {
+        randomIndividual: () => G
+      }
+  )
+
 export type FullOptions<G> = Required<Options<G>>
+
+export type FullAsyncOptions<G> = Required<AsyncOptions<G>>
 
 export type Options<G> = {
   /**
@@ -123,6 +174,11 @@ export type Options<G> = {
    * */
   random?: () => number
 }
+
+export type AsyncOptions<G> = Omit<Options<G>, 'fitness' | 'doesABeatB'> & {
+  fitness: (gene: G) => Promise<number>
+  doesABeatB?: (a: G, b: G) => Promise<boolean>
+}
 ```
 
 </details>
@@ -142,6 +198,13 @@ export function populate<G>(options: FullOptions<G>): void
  * Apply default options and populate when needed
  * */
 export function populateOptions<G>(_options: RequiredOptions<G>): FullOptions<G>
+
+/**
+ * Apply default options and populate when needed for async options
+ * */
+export function populateOptionsAsync<G>(
+  _options: RequiredAsyncOptions<G>,
+): FullAsyncOptions<G>
 
 /**
  * generate a not-bad doesABeatB() function for kick-starter
@@ -169,6 +232,14 @@ export function best<G>(options: {
   gene: G
   fitness: number
 }
+
+export async function bestAsync<G>(options: {
+  population: G[]
+  fitness: (gene: G) => Promise<number>
+}): Promise<{
+  gene: G
+  fitness: number
+}>
 
 export function maxIndex(scores: number[]): number
 ```

@@ -62,6 +62,30 @@ export function best<G>(options: {
   }
 }
 
+export async function bestAsync<G>(options: {
+  population: G[]
+  fitness: (gene: G) => Promise<number>
+}): Promise<{ gene: G; fitness: number }> {
+  const n = options.population.length
+  if (n === 0) {
+    throw new Error('empty population')
+  }
+  let bestGene = options.population[0]
+  let bestFitness = await options.fitness(bestGene)
+  for (let i = 1; i < n; i++) {
+    const gene = options.population[i]
+    const fitness = await options.fitness(gene)
+    if (fitness > bestFitness) {
+      bestFitness = fitness
+      bestGene = gene
+    }
+  }
+  return {
+    gene: bestGene,
+    fitness: bestFitness,
+  }
+}
+
 export function maxIndex(scores: number[]): number {
   const n = scores.length
   if (n === 0) {

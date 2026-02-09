@@ -49,32 +49,49 @@ export type Options<G extends object> = {
    * */
   random?: () => number
 }
+export type AsyncOptions<G extends object> = Omit<
+  Options<G>,
+  'fitness' | 'doesABeatB'
+> & {
+  fitness: (gene: G) => Promise<number>
+  doesABeatB?: (a: G, b: G) => Promise<boolean>
+}
+type PopulationOptions<G extends object> =
+  | {
+      population: G[]
+    }
+  | {
+      randomIndividual: () => G
+    }
+
 export type RequiredOptions<G extends object> = Options<G> &
-  (
-    | {
-        population: G[]
-      }
-    | {
-        randomIndividual: () => G
-      }
-  )
+  PopulationOptions<G>
+export type RequiredAsyncOptions<G extends object> = AsyncOptions<G> &
+  PopulationOptions<G>
+
 export type FullOptions<G extends object> = Required<Options<G>>
+export type FullAsyncOptions<G extends object> = Required<AsyncOptions<G>>
 
 /**
  * in-place populate the options.population gene pool
  * */
-export function populate<G extends object>(options: FullOptions<G>) {
+export function populate<G extends object>(
+  options: FullOptions<G> | FullAsyncOptions<G>,
+) {
   while (options.population.length < options.populationSize) {
     options.population.push(options.randomIndividual())
   }
 }
 
-/**
- * Apply default options and populate when needed
- * */
-export function populateOptions<G extends object>(
+function populateOptionsHelper<G extends object>(
   _options: RequiredOptions<G>,
-): FullOptions<G> {
+): FullOptions<G>
+function populateOptionsHelper<G extends object>(
+  _options: RequiredAsyncOptions<G>,
+): FullAsyncOptions<G>
+function populateOptionsHelper<G extends object>(
+  _options: RequiredOptions<G> | RequiredAsyncOptions<G>,
+): FullOptions<G> | FullAsyncOptions<G> {
   let {
     mutationRate,
     doesABeatB,
@@ -84,16 +101,11 @@ export function populateOptions<G extends object>(
     random,
   } = _options
   /* eslint-disable-next-line prefer-const */
-  let fullOptions: FullOptions<G>
+  let fullOptions = _options as FullOptions<G> | FullAsyncOptions<G>
   if (!mutationRate) {
     mutationRate = 0.5
   }
-  if (!doesABeatB) {
-    doesABeatB = (a, b) => {
-      return fullOptions.fitness(a) >= fullOptions.fitness(b)
-    }
-  }
-  if (doesABeatB.length !== 2) {
+  if (doesABeatB!.length !== 2) {
     throw new TypeError('doesABeatB() should takes 2 arguments')
   }
   if (!populationSize) {
@@ -138,13 +150,57 @@ export function populateOptions<G extends object>(
   fullOptions = {
     ..._options,
     mutationRate,
-    doesABeatB,
+    doesABeatB: doesABeatB!,
     population,
     populationSize,
     randomIndividual,
     random,
-  }
+  } as FullOptions<G> | FullAsyncOptions<G>
   populate(fullOptions)
+  return fullOptions
+}
+
+/**
+ * Apply default options and populate when needed
+ * */
+export function populateOptions<G extends object>(
+  _options: RequiredOptions<G>,
+): FullOptions<G> {
+  let { doesABeatB } = _options
+  /* eslint-disable-next-line prefer-const */
+  let fullOptions: FullOptions<G>
+  if (!doesABeatB) {
+    doesABeatB = (a, b) => {
+      return fullOptions.fitness(a) >= fullOptions.fitness(b)
+    }
+  }
+  fullOptions = populateOptionsHelper({
+    ..._options,
+    doesABeatB,
+  })
+  return fullOptions
+}
+
+/**
+ * Apply default options and populate when needed
+ * */
+export function populateOptionsAsync<G extends object>(
+  _options: RequiredAsyncOptions<G>,
+): FullAsyncOptions<G> {
+  let { doesABeatB } = _options
+  /* eslint-disable-next-line prefer-const */
+  let fullOptions: FullAsyncOptions<G>
+  if (!doesABeatB) {
+    doesABeatB = async (a, b) => {
+      const aFitness = await fullOptions.fitness(a)
+      const bFitness = await fullOptions.fitness(b)
+      return aFitness >= bFitness
+    }
+  }
+  fullOptions = populateOptionsHelper({
+    ..._options,
+    doesABeatB,
+  })
   return fullOptions
 }
 
@@ -189,8 +245,61 @@ export class GaIsland<G extends object> {
     }
   }
 
+  /**
+   * internally calls `this.randomizePopulationOrder()` and `this.compete()`
+   */
   evolve() {
     this.randomizePopulationOrder()
     this.compete()
+  }
+}
+
+export class GaIslandAsync<G extends object> {
+  options: FullAsyncOptions<G>
+
+  constructor(options: RequiredAsyncOptions<G>) {
+    this.options = populateOptionsAsync(options)
+  }
+
+  randomizePopulationOrder() {
+    shuffleArray(this.options.random, this.options.population)
+  }
+
+  /**
+   * should run populate() before invoking this function,
+   * therefore assume options.population size is aligned with options.populationSize
+   * */
+  async compete() {
+    const n = this.options.populationSize
+    const population = this.options.population
+    const end = n - 1
+    for (let i = 0; i < end; i += 2) {
+      const gene = population[i]
+      const competitor = population[i + 1]
+      if (!(await this.options.doesABeatB(gene, competitor))) {
+        // competitor is stronger than current gene, or too far from this gene
+        continue
+      }
+      // competitor is weaker than the current gene, will reuse the competitor for new gene
+      if (this.options.random() < this.options.mutationRate) {
+        // mutate the gene, store the result on weak competitor
+        this.options.mutate(gene, competitor)
+      } else {
+        // crossover the gene with a random parent, store the result on weak competitor
+        const parent2 = randomElement(
+          this.options.random,
+          this.options.population,
+        )
+        this.options.crossover(gene, parent2, competitor)
+      }
+    }
+  }
+
+  /**
+   * internally calls `this.randomizePopulationOrder()` and `this.competeAsync()`
+   */
+  async evolve() {
+    this.randomizePopulationOrder()
+    await this.compete()
   }
 }

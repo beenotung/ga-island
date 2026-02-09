@@ -1,6 +1,11 @@
-import { FullOptions, GaIsland, populateOptions } from '../src/ga-island'
+import {
+  FullOptions,
+  GaIsland,
+  GaIslandAsync,
+  populateOptions,
+} from '../src/ga-island'
 import { expect } from 'chai'
-import { best } from '../src'
+import { best, bestAsync } from '../src'
 
 describe('ga-island TestSuit', function () {
   let n = 60
@@ -140,11 +145,32 @@ describe('ga-island TestSuit', function () {
     for (let generation = 1; ; generation++) {
       ga.evolve()
       let { gene, fitness } = best(ga.options)
-      console.log({
-        generation,
-        bestGene: gene.pattern,
-        fitness,
-      })
+      // console.log({
+      //   generation,
+      //   bestGene: gene.pattern,
+      //   fitness,
+      // })
+      if (fitness === n) {
+        return
+      }
+    }
+  })
+
+  it('should solve the problem async', async function () {
+    let ga = new GaIslandAsync<Gene>({
+      mutate,
+      crossover,
+      fitness: async gene => fitness(gene),
+      randomIndividual,
+    })
+    for (let generation = 1; ; generation++) {
+      ga.evolve()
+      let { gene, fitness } = await bestAsync(ga.options)
+      // console.log({
+      //   generation,
+      //   bestGene: gene.pattern,
+      //   fitness,
+      // })
       if (fitness === n) {
         return
       }
